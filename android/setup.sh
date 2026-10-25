@@ -34,15 +34,16 @@ echo "== 3. Premier fond d'écran (test)"
 tail -n 1 journal.txt
 
 echo "== 4. Planification toutes les heures"
-# --network none : la tâche n'attend pas de connexion (tout se fait hors ligne ;
-#                  sans cette option, Termux:API exige un réseau)
+# Pas de --network none : avec cette option, Termux:API plante en affichant la tâche
+#   (NullPointerException dans JobSchedulerAPI.formatJobInfo, getRequiredNetwork() = null),
+#   et --pending plante aussi. Constaté sur le téléphone le 25/10/2026.
+#   Réseau "any" par défaut → la tâche ne tourne que si le téléphone a une connexion.
 # --persisted true : la tâche survit au redémarrage du téléphone
 # --battery-not-low : laissé par défaut (true) → pas de génération quand la batterie est faible
 termux-job-scheduler \
   --job-id "$JOB_ID" \
   --script "$PWD/tache.sh" \
   --period-ms "$PERIODE_MS" \
-  --network none \
   --persisted true
 
 echo

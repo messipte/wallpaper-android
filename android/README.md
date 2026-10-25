@@ -4,8 +4,7 @@ Version téléphone du générateur textmode du PC (`~/wallpaper-gen/`) : toutes
 une nouvelle image (champs combinés, palettes sobres, glyphes Bescii-Mono) devient le fond
 de l'écran d'accueil et de l'écran de verrouillage.
 
-Testé sur le PC (rendu, recette dans le PNG, appels à `termux-wallpaper` simulés).
-**Pas encore testé sur le téléphone** : les étapes ci-dessous sont à confirmer à la première installation.
+Testé sur le PC (rendu, recette dans le PNG) et sur le téléphone (Honor 400 Smart, 25/10/2026).
 
 ## Comment ça marche
 
@@ -100,8 +99,12 @@ Pas besoin de relancer `setup.sh` : la tâche lance toujours le `tache.sh` du do
 - **« Toutes les heures » est approximatif** : Android regroupe les tâches pour économiser
   la batterie (mode veille profonde), un changement peut arriver en retard.
 - **Batterie faible** : la tâche ne tourne pas (réglage par défaut de Termux:API, voulu).
-- **Réseau** : pas nécessaire (`--network none` dans `setup.sh` ; sans cette option,
-  Termux:API attendrait une connexion).
+- **Réseau** : la génération se fait hors ligne, mais la tâche **ne tourne que si le téléphone
+  a une connexion** (Wi-Fi ou données). C'est le réglage par défaut de Termux:API ;
+  `--network none` l'éviterait, mais fait planter Termux:API (bug ci-dessous).
+- **Bug Termux:API avec `--network none`** : `termux-job-scheduler` plante à l'affichage
+  (NullPointerException dans `JobSchedulerAPI.formatJobInfo` : `getRequiredNetwork()` renvoie
+  `null`), et `--pending` aussi. La tâche est enregistrée quand même. D'où l'option retirée.
 - **Après un redémarrage** : la tâche est gardée (`--persisted true`).
 - Si rien ne change : regarder `journal.txt`, puis `termux-job-scheduler --pending`.
   Si `termux-wallpaper` reste bloqué, l'appli Termux:API manque ou ne vient pas de F-Droid.
