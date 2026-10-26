@@ -18,9 +18,10 @@ pkg update -y
 # librsvg : fournit rsvg-convert (SVG → PNG)
 # termux-api : commandes termux-wallpaper et termux-job-scheduler
 #              (il faut AUSSI l'appli Termux:API, voir README)
-pkg install -y nodejs librsvg termux-api
+# util-linux : fournit flock (verrou de tache.sh)
+pkg install -y nodejs librsvg termux-api util-linux
 
-for cmd in node rsvg-convert termux-wallpaper termux-job-scheduler; do
+for cmd in node rsvg-convert termux-wallpaper termux-job-scheduler flock; do
   command -v "$cmd" >/dev/null || { echo "Commande introuvable : $cmd"; exit 1; }
 done
 

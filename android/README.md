@@ -13,7 +13,7 @@ Testé sur le PC (rendu, recette dans le PNG) et sur le téléphone (Honor 400 S
 | `champs.js` | Tirage au hasard : 2 à 4 champs mélangés, palette, rampe de glyphes. Copie de `sketch.js` du PC. |
 | `generer.js` | Dessine une case = un glyphe dans un SVG, le convertit en PNG (`rsvg-convert`), écrit la recette dans le PNG, garde 500 images, applique le fond. |
 | `glyphes.json` | Contours des glyphes de Bescii-Mono, extraits par `outils/extraire_glyphes.py`. |
-| `tache.sh` | Ce que le planificateur lance toutes les heures. Écrit dans `journal.txt`. |
+| `tache.sh` | Ce que le planificateur lance toutes les heures. Écrit dans `journal.txt`. Verrou (`flock`) : une seule exécution à la fois. |
 | `setup.sh` | Installation + planification. |
 | `arreter.sh` | Annule la planification. |
 
@@ -53,7 +53,7 @@ cd wallpaper-android/android
 bash setup.sh
 ```
 
-`setup.sh` installe `nodejs`, `librsvg` et `termux-api`, génère un premier fond d'écran
+`setup.sh` installe `nodejs`, `librsvg`, `termux-api` et `util-linux` (pour `flock`), génère un premier fond d'écran
 (il doit changer tout de suite), puis planifie la tâche toutes les heures.
 
 Aucune dépendance npm : `generer.js` n'utilise que Node.
@@ -105,6 +105,10 @@ Pas besoin de relancer `setup.sh` : la tâche lance toujours le `tache.sh` du do
 - **Bug Termux:API avec `--network none`** : `termux-job-scheduler` plante à l'affichage
   (NullPointerException dans `JobSchedulerAPI.formatJobInfo` : `getRequiredNetwork()` renvoie
   `null`), et `--pending` aussi. La tâche est enregistrée quand même. D'où l'option retirée.
+- **Double lancement** : le planificateur lance parfois `tache.sh` deux fois dans la même
+  seconde. Avant le verrou, les deux exécutions prenaient le même nom de fichier et la
+  deuxième plantait (`ENOENT … unlink …svg` dans `journal.txt`, constaté 2 fois le 26/10/2026).
+  Désormais la deuxième sort sans rien faire, et les noms de fichiers ont les millisecondes.
 - **Après un redémarrage** : la tâche est gardée (`--persisted true`).
 - Si rien ne change : regarder `journal.txt`, puis `termux-job-scheduler --pending`.
   Si `termux-wallpaper` reste bloqué, l'appli Termux:API manque ou ne vient pas de F-Droid.

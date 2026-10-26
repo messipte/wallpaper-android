@@ -81,7 +81,8 @@ fs.writeFileSync(fichierSvg, svg);
 try {
   execFileSync("rsvg-convert", ["-w", String(LARGEUR), "-h", String(HAUTEUR), "-o", fichier, fichierSvg]);
 } finally {
-  fs.unlinkSync(fichierSvg); // le SVG ne sert qu'à la conversion
+  // le SVG ne sert qu'à la conversion ; force: true = pas d'erreur s'il a déjà disparu
+  fs.rmSync(fichierSvg, { force: true });
 }
 
 // ---------- 4. Recette dans le PNG ----------
@@ -102,10 +103,12 @@ console.log(`${new Date().toISOString()} OK ${path.basename(fichier)} ${JSON.str
 // Fonctions utilitaires
 // ============================================================
 
+// Date et heure jusqu'aux millisecondes (2026-10-26_16-23-23-457) :
+// deux lancements dans la même seconde donnent quand même deux noms différents.
 function horodatage() {
   const d = new Date();
-  const p = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+  const p = (n, chiffres = 2) => String(n).padStart(chiffres, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}-${p(d.getMilliseconds(), 3)}`;
 }
 
 // Garde les maxFichiers PNG les plus récents, efface les autres.
@@ -115,7 +118,7 @@ function purger(dossier, maxFichiers) {
     .filter((n) => n.toLowerCase().endsWith(".png"))
     .map((n) => path.join(dossier, n))
     .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-  for (const f of pngs.slice(maxFichiers)) fs.unlinkSync(f);
+  for (const f of pngs.slice(maxFichiers)) fs.rmSync(f, { force: true }); // déjà effacé : pas d'erreur
 }
 
 // Ajoute un chunk texte (tEXt) dans un PNG, juste avant la fin du fichier (chunk IEND).
